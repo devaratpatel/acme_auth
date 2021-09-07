@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 const Sequelize = require("sequelize");
 const { STRING } = Sequelize;
@@ -21,7 +22,7 @@ const User = conn.define("user", {
 
 User.byToken = async (token) => {
   try {
-    console.log(token);
+    //console.log(token);
     const payload = jwt.verify(token, process.env.JWT);
     // console.log(payload);
     const user = await User.findByPk(payload.id);
@@ -37,14 +38,24 @@ User.byToken = async (token) => {
     throw error;
   }
 };
+
+User.beforeCreate(async (user) => {
+  const hashed = await bcrypt.hash(user.password, 5);
+  user.password = hashed;
+})
+
 User.authenticate = async ({ username, password }) => {
+  const hashed = await bcrypt.hash(password, 5);
+  const correct = bcrypt.compare(password, hashed);
+  console.log(password);
   const user = await User.findOne({
     where: {
       username,
-      password,
+      //password,
     },
   });
-  if (user) {
+  
+  if (correct) {
     const token = jwt.sign({ id: user.id }, process.env.JWT);
 
     return token;
@@ -54,8 +65,11 @@ User.authenticate = async ({ username, password }) => {
   throw error;
 };
 
+
 const syncAndSeed = async () => {
   await conn.sync({ force: true });
+  let hashed = await bcrypt.hash('password', 5);
+  console.log(hashed);
   const credentials = [
     { username: "lucy", password: "lucy_pw" },
     { username: "moe", password: "moe_pw" },
