@@ -3,7 +3,7 @@ const app = express();
 
 app.use(express.json());
 const {
-  models: { User },
+  models: { User, Note },
 } = require("./db");
 const path = require("path");
 
@@ -26,6 +26,16 @@ app.get("/api/auth", async (req, res, next) => {
   }
 });
 
+app.get("/api/users/:id/notes", async (req, res, next) => {
+  try {
+    const user = await User.findByPk(req.params.id, {
+      include: Note,
+    });
+    res.json(user.notes);
+  } catch (error) {
+    next(error);
+  }
+});
 app.use((err, req, res, next) => {
   console.log(err);
   res.status(err.status || 500).send({ error: err.message });
