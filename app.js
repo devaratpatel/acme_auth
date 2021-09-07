@@ -1,6 +1,5 @@
 const express = require("express");
 const app = express();
-// console.log(process.env.JWT);
 
 app.use(express.json());
 const {
@@ -21,6 +20,7 @@ app.post("/api/auth", async (req, res, next) => {
 app.get("/api/auth", async (req, res, next) => {
   try {
     res.send(await User.byToken(req.headers.authorization));
+    console.log("this will run on the temrinal:");
   } catch (ex) {
     next(ex);
   }

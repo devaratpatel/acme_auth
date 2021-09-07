@@ -21,10 +21,12 @@ const User = conn.define("user", {
 
 User.byToken = async (token) => {
   try {
-    const user = await User.findByPk(token);
+    console.log(token);
+    const payload = jwt.verify(token, process.env.JWT);
+    // console.log(payload);
+    const user = await User.findByPk(payload.id);
     if (user) {
-      const payload = jwt.verify(token, process.env.JWT);
-      console.log(payload);
+      return user;
     }
     const error = Error("bad credentials");
     error.status = 401;
